@@ -16,7 +16,7 @@ class TransactionManager(RequestBase):
                                 headers=self.zuora_config.headers,
                                 verify=False)
         return self.get_json(response)
-    
+
     @rest_client_reconnect
     def get_payments(self, accountKey, pageSize=10):
         fullUrl = self.zuora_config.base_url + \
@@ -28,7 +28,7 @@ class TransactionManager(RequestBase):
                                 headers=self.zuora_config.headers,
                                 verify=False)
         return self.get_json(response)
-    
+
     @rest_client_reconnect
     def invoice_and_collect(self, jsonParams):
         fullUrl = self.zuora_config.base_url + 'operations/invoice-collect'

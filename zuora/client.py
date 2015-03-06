@@ -411,7 +411,7 @@ class Zuora:
                     subscription_key,
                     jsonParams={'cancellationEffectiveDate': effective_date})
         return response
-    
+
     def create_payment_method(self, baid=None, user_email=None):
         payment_method = self.client.factory.create('ns2:PaymentMethod')
         if baid:
@@ -442,7 +442,7 @@ class Zuora:
             zContact = self.make_contact(user=user,
                                          billing_address=billing_address,
                                          zAccount=zAccount)
-        
+
         # Add the shipping contact if it exists
         if shipping_address:
             zShippingContact = self.make_contact(user=user,
@@ -1533,7 +1533,7 @@ class Zuora:
 
         # Return the Match
         return zRecords
-    
+
     def set_default_payment_method_id(self, account_id, payment_method_id,
                                       auto_pay=None):
         # Update the default payment method on the account
@@ -1548,7 +1548,7 @@ class Zuora:
                         payment_method):
         """Switches the gateway if the user is purchasing with a different
            gateway.
-           
+
            Returns True or False if the account already exists or not
         """
         # Make sure the account exists already, otherwise the gateway will be
@@ -1564,7 +1564,7 @@ class Zuora:
             logging.info(
                 "Gateway: Account and Gateway existed. user: %s" % (user.id))
             zAccount = account
-        
+
         # If the Payment Gateway still isn't specified, set it and change it
         if not getattr(zAccount, 'PaymentGateway', None):
             if gateway_name:
@@ -1575,7 +1575,7 @@ class Zuora:
                          % (user.id, update_dict))
             self.update_account(zAccount.Id, update_dict)
             return True
-        
+
         # If no gateway was specified, and the gateway is set
         # to the default gateway
         if not gateway_name \
@@ -1617,9 +1617,9 @@ class Zuora:
             logging.error(
                 "Unexpected gateway conditions. gateway: %s acct_gateway: %s" \
                 % (gateway_name, zAccount.PaymentGateway))
-        
+
         return True
-    
+
     def update_account_payment(self, account_id, gateway, payment_method):
         # These steps cannot be combined, and have to be executed in this order
         # Update the account gateway
@@ -1702,7 +1702,7 @@ class Zuora:
         # Specify what gateway to use for payments for the user
         if gateway_name:
             zAccount.PaymentGateway = gateway_name
-            
+
         # Determine which Payment Gateway to use, if specified
         elif self.authorize_gateway:
             zAccount.PaymentGateway = self.authorize_gateway
@@ -1713,7 +1713,7 @@ class Zuora:
 
         if site_name:
             zAccount.User_Site__c = site_name
-        
+
         # If specifying a gateway, the account will be created
         # during the subscribe call
         if lazy or gateway_name:
@@ -1813,7 +1813,7 @@ class Zuora:
         zPayment.Type = payment_type
         zPayment.Status = payment_status
         zPayment.EffectiveDate = effective_date
-        
+
         # If it's not a dry run, create the payment
         if not dry_run:
             response = self.create(zPayment)
@@ -1992,7 +1992,7 @@ class Zuora:
                             gateway_pm)
         else:
             existing_account = False
-        
+
         # Get or Create Account
         if not zAccount:
             zAccount = self.make_account(user=user, site_name=site_name,
@@ -2005,14 +2005,14 @@ class Zuora:
                                          billing_address=billing_address,
                                          zAccount=zAccount,
                                          gateway_name=gateway_name)
-        
+
         # Add the shipping contact if it exists
         if not zShippingContact and shipping_address:
             zShippingContact = self.make_contact(user=user,
                                          billing_address=shipping_address,
                                          zAccount=zAccount,
                                          gateway_name=gateway_name)
-        
+
         # Get Rate Plan & Build Rate Plan Data
         zRatePlanData = self.make_rate_plan_data(product_rate_plan_id)
 
@@ -2032,7 +2032,7 @@ class Zuora:
                                     .create("ns0:SubscribeOptions")
         zSubscriptionOptions.GenerateInvoice = generate_invoice_flag
         zSubscriptionOptions.ProcessPayments = process_payments_flag
-        
+
         # Attach SubscribeInvoiceProcessingOptions
         SubscribeInvoiceProcessingOptions = self.client.factory\
                             .create("ns0:SubscribeInvoiceProcessingOptions")
@@ -2042,7 +2042,7 @@ class Zuora:
                                                                 "Subscription"
         zSubscriptionOptions.SubscribeInvoiceProcessingOptions = \
                                             SubscribeInvoiceProcessingOptions
-        
+
         log.info("***external_payment_method: %s" % external_payment_method)
         if external_payment_method:
             product_rate_plan_charges = self.get_product_rate_plan_charges(
@@ -2064,7 +2064,7 @@ class Zuora:
         # Subscription Data
         zSubscriptionData = self.client.factory.create('ns0:SubscriptionData')
         zSubscriptionData.Subscription = zSubscription
-        
+
         # Apply the discount rate plan if it exists
         if zDiscountRatePlanData:
             zSubscriptionData.RatePlanData = [zRatePlanData, zDiscountRatePlanData]
@@ -2104,7 +2104,7 @@ class Zuora:
         log.info("***Subscribe Request: %s" % zSubscribeRequest)
         response = self.call(fn, zSubscribeRequest)
         log.info("***Subscribe Response: %s" % response)
-        
+
         # If the gateway is paypal, make sure AutoPay is set to True
         if gateway_name and 'paypal' in gateway_name.lower():
             if isinstance(response, list):

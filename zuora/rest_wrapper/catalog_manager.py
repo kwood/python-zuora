@@ -6,13 +6,13 @@ from request_base import RequestBase, rest_client_reconnect
 
 
 class CatalogManager(RequestBase):
-    
+
     @rest_client_reconnect
     def get_catalog(self, pageSize=10, page=1):
         fullUrl = self.zuora_config.base_url + 'catalog/products'
         params = {'pageSize': pageSize,
                   'page': page}
-    
+
         response = requests.get(fullUrl, params=params,
                                 headers=self.zuora_config.headers,
                                 verify=False)

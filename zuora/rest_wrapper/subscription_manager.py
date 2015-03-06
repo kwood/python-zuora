@@ -14,19 +14,23 @@ class SubscriptionManager(RequestBase):
         fullUrl = self.zuora_config.base_url + 'subscriptions/accounts/' + \
                   accountKey
         data = {'pageSize': pageSize}
-    
+
         response = requests.get(fullUrl, params=data,
                                 headers=self.zuora_config.headers,
                                 verify=False)
         return self.get_json(response)
 
     @rest_client_reconnect
-    def get_subscriptions_by_key(self, subsKey):
+    def get_subscription_by_key(self, subsKey):
         fullUrl = self.zuora_config.base_url + 'subscriptions/' + subsKey
         response = requests.get(fullUrl, headers=self.zuora_config.headers,
                                 verify=False)
         return self.get_json(response)
-    
+
+    @rest_client_reconnect
+    def get_subscriptions_by_key(self, subsKey):
+        return self.get_subscription_by_key(subsKey)
+
     @rest_client_reconnect
     def renew_subscription(self, subsKey,
                            jsonParams={'invoiceCollect': False}):
@@ -38,7 +42,7 @@ class SubscriptionManager(RequestBase):
                                 verify=False
         )
         return self.get_json(response)
-    
+
     @rest_client_reconnect
     def cancel_subscription(self, subsKey, jsonParams={}):
         jsonParams.setdefault('cancellationPolicy',
@@ -51,7 +55,7 @@ class SubscriptionManager(RequestBase):
                                 headers=self.zuora_config.headers,
                                 verify=False)
         return self.get_json(response)
-    
+
     @rest_client_reconnect
     def preview_subscription(self, jsonParams):
         fullUrl = self.zuora_config.base_url + 'subscriptions/preview'
@@ -60,7 +64,7 @@ class SubscriptionManager(RequestBase):
                                  headers=self.zuora_config.headers,
                                  verify=False)
         return self.get_json(response)
-    
+
     @rest_client_reconnect
     def create_subscription(self, jsonParams):
         fullUrl = self.zuora_config.base_url + 'subscriptions'
@@ -69,7 +73,7 @@ class SubscriptionManager(RequestBase):
                                  headers=self.zuora_config.headers,
                                  verify=False)
         return self.get_json(response)
-    
+
     @rest_client_reconnect
     def update_subscription(self, subsKey, jsonParams):
         fullUrl = self.zuora_config.base_url + 'subscriptions/' + subsKey
@@ -78,4 +82,3 @@ class SubscriptionManager(RequestBase):
                                 headers=self.zuora_config.headers,
                                 verify=False)
         return self.get_json(response)
-        
