@@ -1796,7 +1796,7 @@ class Zuora:
         # Return
         return zContact
 
-    def make_payment(self, account_id, invoice_id=None, invoice_amount,
+    def make_payment(self, account_id, invoice_amount, invoice_id=None,
                      payment_method_id=None, payment_type='External',
                      payment_status='Processed', effective_date=None,
                      dry_run=False, reference_id=None):
