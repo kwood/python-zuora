@@ -2,7 +2,7 @@
     Zuora Interface Module
     ~~~~~~~~~~~~~~~~~~~~~~
 
-    Current WSDL files are based on Zuora WSDL 48.
+    Current WSDL files are based on Zuora WSDL 65.
 
     Accounts for our Zuora setup are fetch by either A-user_id (i.e. A-32432)
     or just by the user id (look at the get_account WHERE clause).
@@ -20,6 +20,7 @@ from datetime import datetime, date, timedelta
 from os import path
 import re
 import httplib2
+import logging
 
 from suds import WebFault
 from suds.client import Client
@@ -29,7 +30,8 @@ from suds.transport.http import HttpAuthenticated, HttpTransport
 from suds.transport import Reply
 from suds.sax.text import Text
 
-import logging
+from rest_client import RestClient
+
 log = logging.getLogger(__name__)
 
 # Tell suds to stop logging and stfu (it logs noise as errors)
@@ -37,9 +39,6 @@ log_suds = logging.getLogger('suds')
 log_suds.propagate = False
 
 SOAP_TIMESTAMP = '%Y-%m-%dT%H:%M:%S-06:00'
-
-
-from rest_client import RestClient
 
 
 class HttpTransportWithKeepAlive(HttpAuthenticated, object):
@@ -131,7 +130,7 @@ class Zuora:
 
         # Force No Cache
         self.client.set_options(cache=None)
-        
+
         # Create the rest client
         self.rest_client = RestClient(zuora_settings)
 
@@ -422,6 +421,7 @@ class Zuora:
             payment_method.Type = 'PayPal'
 
         return payment_method
+
 
     def create_active_account(self, zAccount=None, zContact=None,
                               payment_method_id=None, user=None,
@@ -1796,10 +1796,14 @@ class Zuora:
         # Return
         return zContact
 
-    def make_payment(self, account_id, invoice_id, invoice_amount,
-                     payment_method_id, payment_type='External',
+    def make_payment(self, account_id, invoice_id=None, invoice_amount,
+                     payment_method_id=None, payment_type='External',
                      payment_status='Processed', effective_date=None,
-                     dry_run=False):
+                     dry_run=False, reference_id=None):
+        """
+        Creates a Payment with the SOAP API.
+        See: http://knowledgecenter.zuora.com/BC_Developers/SOAP_API/D_Use_Cases_Code_Samples/E_Working_with_Invoices/D_Applying_Payments_to_an_Invoice
+        """
         if not effective_date:
             effective_date = date.today().strftime(SOAP_TIMESTAMP)
         else:
@@ -1807,12 +1811,18 @@ class Zuora:
         # Create the Payment
         zPayment = self.client.factory.create('ns2:Payment')
         zPayment.AccountId = account_id
-        zPayment.InvoiceId = invoice_id
-        zPayment.AppliedInvoiceAmount = invoice_amount
+        if invoice_id:  # If InvoiceId is specified
+            zPayment.InvoiceId = invoice_id
+            zPayment.AppliedInvoiceAmount = invoice_amount
+        else:  # Otherwise apply payment as credit balance
+            zPayment.AppliedCreditBalanceAmount = invoice_amount
+        if payment_method_id is None:  # If previously stored Zuora Payment Method is not chosen, use the PaymentMethodId placeholder for "Type == Other"
+            payment_method_id = self.query("SELECT Id, AccountId, CreatedDate, Type FROM PaymentMethod WHERE Type = 'Other'").records[0].Id
         zPayment.PaymentMethodId = payment_method_id
         zPayment.Type = payment_type
         zPayment.Status = payment_status
         zPayment.EffectiveDate = effective_date
+        zPayment.ReferenceId = reference_id  # Used mainly for Stripe charge IDs
 
         # If it's not a dry run, create the payment
         if not dry_run:
@@ -1831,6 +1841,7 @@ class Zuora:
 
         # Return
         return zPayment
+
 
     def make_rate_plan_data(self, product_rate_plan_id):
         """
