@@ -24,7 +24,8 @@ Using the client is fairly simple:
     >>> import zuora
     >>> zuora_settings = {'username': 'example_user',
     >>>                   'password': 'example_pass',
-    >>>                   'wsdl_file': 'zuora.a.39.0.dev.wsdl'}
+    >>>                   'wsdl_file': 'zuora.a.39.0.dev.wsdl',
+    >>>                   'base_url': 'https://api.zuora.com/rest/v1'}
     >>> z = zuora.Zuora(zuora_settings)
     >>> z.get_account(user_id=1232)
 
