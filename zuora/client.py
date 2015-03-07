@@ -491,7 +491,7 @@ class Zuora:
             raise ZuoraException(
                 "Unknown Error updating Account. %s" % response)
 
-    def get_account(self, user_id, account_id=None, id_only=False):
+    def get_account(self, account_number=None, account_id=None, id_only=False):
         """
         Checks to see if the loaded user has an account
         """
@@ -502,12 +502,15 @@ class Zuora:
                         PaymentGateway, Name, Status, UpdatedDate"""
         # If no account id was specified
         if not account_id:
-            qs = """
-                SELECT
-                    %s
-                FROM Account
-                WHERE AccountNumber = '%s' or AccountNumber = 'A-%s'
-                """ % (fields, user_id, user_id)
+            if not account_number:
+                raise DoesNotExist("Either AccountNumber or Account ID must be specified.")
+            else:
+                qs = """
+                    SELECT
+                        %s
+                    FROM Account
+                    WHERE AccountNumber = '%s' or AccountNumber = 'A-%s'
+                    """ % (fields, account_number, account_number)
         else:
             qs = """
                 SELECT
@@ -521,8 +524,8 @@ class Zuora:
             zAccount = response.records[0]
             return zAccount
         else:
-            raise DoesNotExist("Unable to find Account for User ID %s"\
-                            % user_id)
+            raise DoesNotExist("Unable to find Account for Account # %s"\
+                            % account_number)
 
     def get_contact(self, email=None, account_id=None):
         """
