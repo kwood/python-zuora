@@ -123,7 +123,7 @@ class Zuora:
                                     self.base_dir + "/" + self.wsdl_file)
 
         self.client = Client(
-                        url=wsdl_file,
+                        url=self.wsdl_file,
                         doctor=schema_doctor,
                         cache=None,
                         transport=HttpTransportWithKeepAlive(self.use_cert))
