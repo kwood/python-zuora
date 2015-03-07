@@ -11,7 +11,6 @@ setupArgs = {
         'zuora',
         'zuora.rest_wrapper',
     ],
-    'package_data': {'zuora': ['./*.wsdl']},
 }
 
 try:
