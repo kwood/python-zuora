@@ -537,7 +537,7 @@ class Zuora:
             qs_filter.append("AccountId = '%s'" % account_id)
 
         if email:
-            qs_filter.append("PersonalEmail = '%s'" % email)
+            qs_filter.append("WorkEmail = '%s'" % email)
 
         qs = """
             SELECT
@@ -1780,7 +1780,7 @@ class Zuora:
             zContact.FirstName = name_underscore_fix(user['first_name'])
             zContact.LastName = name_underscore_fix(user['last_name'])
 
-        zContact.PersonalEmail = user["email"]
+        zContact.WorkEmail = user["email"]
 
         if zAccount is not None and hasattr(zAccount, 'Id'):
             zContact.AccountId = zAccount.Id
