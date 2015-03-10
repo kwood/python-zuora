@@ -527,7 +527,7 @@ class Zuora:
             raise DoesNotExist("Unable to find Account for Account # %s"\
                             % account_number)
 
-    def get_contact(self, email=None, account_id=None):
+    def get_contacts(self, email=None, account_id=None):
         """
         Checks to see if the loaded user has a contact
         """
@@ -552,10 +552,10 @@ class Zuora:
 
         response = self.query(qs)
         if getattr(response, "records") and len(response.records) > 0:
-            zContact = response.records[0]
-            return zContact
+            zContacts = response.records
+            return zContacts
         else:
-            raise DoesNotExist("Unable to find Contact for Email %s"\
+            raise DoesNotExist("Unable to find Contacts for Email %s"\
                             % email)
 
     def get_invoice(self, invoice_id=None):
