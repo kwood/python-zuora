@@ -50,8 +50,7 @@ class HttpTransportWithKeepAlive(HttpAuthenticated, object):
             cert_file = path_to_certs + "/PCA-3G5.pem"
             self.http = httplib2.Http(timeout=20, ca_certs=cert_file)
         else:
-            self.http = httplib2.Http(timeout=20,
-                                  disable_ssl_certificate_validation=True)
+            self.http = httplib2.Http(timeout=20, disable_ssl_certificate_validation=True)
 
     def open(self, request):
         return HttpTransport.open(self, request)
@@ -411,17 +410,18 @@ class Zuora:
                     jsonParams={'cancellationEffectiveDate': effective_date})
         return response
 
-    def create_payment_method(self, baid=None, user_email=None):
+    """
+    REFACTOR
+    """
+    def create_payment_method(self, paypal_baid=None, paypal_email=None):
         payment_method = self.client.factory.create('ns2:PaymentMethod')
-        if baid:
-            payment_method.PaypalBaid = baid
+        if paypal_baid:
+            payment_method.PaypalBaid = paypal_baid
             # Paypal user e-mail required
-            payment_method.PaypalEmail = user_email
+            payment_method.PaypalEmail = paypal_email
             payment_method.PaypalType = 'ExpressCheckout'
             payment_method.Type = 'PayPal'
-
         return payment_method
-
 
     def create_active_account(self, zAccount=None, zContact=None,
                               payment_method_id=None, user=None,
@@ -445,9 +445,11 @@ class Zuora:
 
         # Add the shipping contact if it exists
         if shipping_address:
-            zShippingContact = self.make_contact(user=user,
-                                         billing_address=shipping_address,
-                                         zAccount=zAccount)
+            zShippingContact = self.make_contact(
+                user=user,
+                billing_address=shipping_address,
+                zAccount=zAccount
+            )
         else:
             zShippingContact = None
 
@@ -498,7 +500,7 @@ class Zuora:
         if id_only:
             fields = 'Id'
         else:
-            fields = """Id, AccountNumber, AutoPay, Balance, DefaultPaymentMethodId,
+            fields = """Id, AccountNumber, AutoPay, Balance, Currency, DefaultPaymentMethodId,
                         PaymentGateway, Name, Status, UpdatedDate"""
         # If no account id was specified
         if not account_id:
@@ -566,7 +568,7 @@ class Zuora:
         # Search for Matching Account
         qs = """
             SELECT
-                AccountID, AdjustmentAmount, Amount,
+                AccountId, AdjustmentAmount, Amount,
                 Balance, CreatedDate, DueDate,
                 IncludesOneTime, IncludesRecurring, IncludesUsage,
                 InvoiceDate, InvoiceNumber,
@@ -928,7 +930,7 @@ class Zuora:
             return zPaymentMethods
         return []
 
-    def get_products(self, product_id=None, shortcodes=None):
+    def get_products(self, product_id=None):
         """
         Gets the Product.
 
@@ -940,7 +942,7 @@ class Zuora:
         qs = """
             SELECT
                 Description, EffectiveEndDate, EffectiveStartDate,
-                Id, SKU, Name, ShortCode__c
+                Id, SKU, Name
             FROM Product
             """
 
@@ -948,10 +950,10 @@ class Zuora:
         if product_id:
             qs_filter = "Id = '%s'" % product_id
         # If we're pulling multiple products by their shortcodes
-        elif shortcodes:
-            qs_filter_list = ["ShortCode__c = '%s'" % code
-                                for code in shortcodes]
-            qs_filter = " OR ".join(qs_filter_list)
+        # elif shortcodes:
+        #     qs_filter_list = ["ShortCode__c = '%s'" % code
+        #                         for code in shortcodes]
+        #     qs_filter = " OR ".join(qs_filter_list)
 
         if qs_filter:
             qs += " WHERE %s" % qs_filter
@@ -964,10 +966,11 @@ class Zuora:
             raise DoesNotExist("Unable to find Product for %s"\
                             % product_id)
 
-    def get_rate_plan_charges(self, rate_plan_id=None,
-                                    rate_plan_id_list=None,
-                                    product_rate_plan_charge_id=None,
-                                    pricing_info="Price"):
+    def get_rate_plan_charges(
+            self, rate_plan_id=None,
+            rate_plan_id_list=None,
+            product_rate_plan_charge_id=None,
+            pricing_info="Price"):
         """
         Gets the Rate Plan Charges
 
@@ -1655,7 +1658,7 @@ class Zuora:
         dpm_dict = {'DefaultPaymentMethodId': payment_method_id}
         self.update_account(account_id, dpm_dict)
 
-    def make_account(self, user=None, currency='USD', status="Draft",
+    def make_account(self, account_name=None, user=None, crm_id=None, currency='USD', status='Draft',
                      lazy=False, site_name=None, billing_address=None,
                      gateway_name=None):
         """
@@ -1674,31 +1677,35 @@ class Zuora:
         """
 
         # Check User
-        if not user:
-            raise MissingRequired("No User Selected.")
+        # if not user:
+        #     raise MissingRequired("No User Selected.")
 
         # Get Today
         today = date.today()
 
         # Build Account
         zAccount = self.client.factory.create('ns2:Account')
-        zAccount.AccountNumber = "A-%s" % user["id"]
+        # zAccount.AccountNumber = "A-%s" % user["id"]
         zAccount.AllowInvoiceEdit = True
         # Zuora requires AutoPay be false at this point. Can be changed later
         zAccount.AutoPay = False
         zAccount.Batch = 'Batch1'
         zAccount.BillCycleDay = today.day
-        zAccount.CrmId = str(user["id"])
+        if crm_id:
+            zAccount.CrmId = crm_id
         zAccount.Currency = currency
-        if billing_address and billing_address["last_name"] != '' and \
-           billing_address["first_name"] != '':
-            zAccount.Name = "%s, %s"[0:50] % \
-                        (billing_address["last_name"],
-                         billing_address["first_name"])
+        if account_name:
+            zAccount.Name = account_name
         else:
-            zAccount.Name = "%s, %s"[0:50] % \
-                            (name_underscore_fix(user["last_name"]),
-                             name_underscore_fix(user["first_name"]))
+            if billing_address and billing_address["last_name"] != '' and \
+               billing_address["first_name"] != '':
+                zAccount.Name = "%s, %s"[0:50] % \
+                            (billing_address["last_name"],
+                             billing_address["first_name"])
+            else:
+                zAccount.Name = "%s, %s"[0:50] % \
+                                (name_underscore_fix(user.last_name),
+                                 name_underscore_fix(user.first_name))
         zAccount.PaymentTerm = 'Due Upon Receipt'
         zAccount.Status = status
 
@@ -1755,19 +1762,23 @@ class Zuora:
         """
 
         # Check User / Billing Address
-        if not user:
-            raise ZuoraException("No User Selected.")
+        # if not user:
+        #     raise ZuoraException("No User Selected.")
 
         # Build Contact
         # TODO: remove ns2
         zContact = self.client.factory.create('ns2:Contact')
+        if user:
+            zContact.WorkEmail = user.email
+            zContact.FirstName = name_underscore_fix(user.first_name)
+            zContact.LastName = name_underscore_fix(user.last_name)
 
         if billing_address is not None:
             # Make sure the first and last name are never empty
-            zContact.FirstName = name_underscore_fix(
-                                                billing_address["first_name"])
-            zContact.LastName = name_underscore_fix(
-                                                billing_address["last_name"])
+            if billing_address["first_name"]:
+                zContact.FirstName = name_underscore_fix(billing_address["first_name"])
+            if billing_address["last_name"]:
+                zContact.LastName = name_underscore_fix(billing_address["last_name"])
             zContact.Address1 = billing_address["street_1"]
             zContact.Address2 = billing_address.get("street_2")
             zContact.City = billing_address["city"]
@@ -1776,11 +1787,6 @@ class Zuora:
             zContact.Country = billing_address["country_code"]
             if billing_address.get("phone"):
                 zContact.HomePhone = billing_address["phone"]
-        else:
-            zContact.FirstName = name_underscore_fix(user['first_name'])
-            zContact.LastName = name_underscore_fix(user['last_name'])
-
-        zContact.WorkEmail = user["email"]
 
         if zAccount is not None and hasattr(zAccount, 'Id'):
             zContact.AccountId = zAccount.Id
@@ -1844,7 +1850,6 @@ class Zuora:
 
         # Return
         return zPayment
-
 
     def make_rate_plan_data(self, product_rate_plan_id):
         """
@@ -1960,17 +1965,19 @@ class Zuora:
 
         return response
 
-    def subscribe(self, product_rate_plan_id, monthly_term, zAccount=None,
-                  zContact=None, zShippingContact=None,
-                  process_payments_flag=True,
-                  generate_invoice_flag=True, generate_preview=False,
-                  term_type="TERMED", renewal_term=None,
-                  account_name=None, subscription_name=None,
-                  recurring=True, payment_method=None, order_id=None,
-                  user=None, billing_address=None, shipping_address=None,
-                  start_date=None, site_name=None,
-                  discount_product_rate_plan_id=None,
-                  external_payment_method=None, gateway_name=None):
+    def subscribe(
+        self, product_rate_plan_id, monthly_term, zAccount=None,
+        zContact=None, zShippingContact=None,
+        account_name=None, process_payments_flag=True,
+        generate_invoice_flag=True, generate_preview=False,
+        term_type="TERMED", renewal_term=None,
+        account_name=None, subscription_name=None,
+        recurring=True, payment_method=None, order_id=None,
+        user=None, billing_address=None, shipping_address=None,
+        start_date=None, site_name=None,
+        discount_product_rate_plan_id=None,
+        external_payment_method=None, gateway_name=None):
+
         """
         The subscribe() call bundles the information required to create one
         or more new subscriptions. This is a combined call that you can use
@@ -2009,23 +2016,23 @@ class Zuora:
 
         # Get or Create Account
         if not zAccount:
-            zAccount = self.make_account(user=user, site_name=site_name,
-                                         billing_address=billing_address,
-                                         gateway_name=gateway_name)
+            zAccount = self.make_account(
+                user=user, account_name=account_name,
+                site_name=site_name, billing_address=billing_address,
+                gateway_name=gateway_name)
 
         if not zContact:
             # Create Contact
-            zContact = self.make_contact(user=user,
-                                         billing_address=billing_address,
-                                         zAccount=zAccount,
-                                         gateway_name=gateway_name)
+            zContact = self.make_contact(
+                user=user, billing_address=billing_address,
+                zAccount=zAccount, gateway_name=gateway_name)
 
         # Add the shipping contact if it exists
         if not zShippingContact and shipping_address:
-            zShippingContact = self.make_contact(user=user,
-                                         billing_address=shipping_address,
-                                         zAccount=zAccount,
-                                         gateway_name=gateway_name)
+            zShippingContact = self.make_contact(
+                user=user, billing_address=shipping_address,
+                zAccount=zAccount,
+                gateway_name=gateway_name)
 
         # Get Rate Plan & Build Rate Plan Data
         zRatePlanData = self.make_rate_plan_data(product_rate_plan_id)
