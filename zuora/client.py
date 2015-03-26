@@ -1967,7 +1967,7 @@ class Zuora:
         return response
 
     def subscribe(
-        self, product_rate_plan_id, monthly_term, zAccount=None,
+        self, product_rate_plan_id_list, monthly_term, zAccount=None,
         zContact=None, zShippingContact=None,
         account_name=None, process_payments_flag=True,
         generate_invoice_flag=True, generate_preview=False,
@@ -2035,7 +2035,9 @@ class Zuora:
                 gateway_name=gateway_name)
 
         # Get Rate Plan & Build Rate Plan Data
-        zRatePlanData = self.make_rate_plan_data(product_rate_plan_id)
+        zRatePlanData = []
+        for product_rate_plan_id in product_rate_plan_id_list:
+            zRatePlanData.append(self.make_rate_plan_data(product_rate_plan_id))
 
         if discount_product_rate_plan_id:
             zDiscountRatePlanData = self.make_rate_plan_data(discount_product_rate_plan_id)
@@ -2066,17 +2068,19 @@ class Zuora:
 
         log.info("***external_payment_method: %s" % external_payment_method)
         if external_payment_method:
-            product_rate_plan_charges = self.get_product_rate_plan_charges(
+            total_price = 0
+            for product_rate_plan_id in product_rate_plan_id_list:
+                product_rate_plan_charges = self.get_product_rate_plan_charges(
                                     product_rate_plan_id=product_rate_plan_id)
-            product_rate_plan_charge_tiers = \
-                self.get_product_rate_plan_charge_tiers(
-                product_rate_plan_charge_id=product_rate_plan_charges[0].Id)
+                product_rate_plan_charge_tiers = \
+                    self.get_product_rate_plan_charge_tiers(
+                    product_rate_plan_charge_id=product_rate_plan_charges[0].Id)
+                total_price += product_rate_plan_charge_tiers[0].Price
+            zExternalPaymentOptions.Amount = total_price
             zExternalPaymentOptions = self.client.factory\
                                     .create("ns0:ExternalPaymentOptions")
             zExternalPaymentOptions.PaymentMethodId = \
                                                 external_payment_method.Id
-            zExternalPaymentOptions.Amount = \
-                                    product_rate_plan_charge_tiers[0].Price
             zExternalPaymentOptions.EffectiveDate = datetime.now().strftime(
                                                             SOAP_TIMESTAMP)
             zSubscriptionOptions.ExternalPaymentOptions = \
@@ -2088,7 +2092,7 @@ class Zuora:
 
         # Apply the discount rate plan if it exists
         if zDiscountRatePlanData:
-            zSubscriptionData.RatePlanData = [zRatePlanData, zDiscountRatePlanData]
+            zSubscriptionData.RatePlanData = zRatePlanData.append(zDiscountRatePlanData)
         else:
             zSubscriptionData.RatePlanData = zRatePlanData
 

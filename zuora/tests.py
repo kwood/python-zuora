@@ -380,7 +380,7 @@ class TestZuora(object):
         z.make_subscription = mock.Mock()
         z.call = mock.Mock()
         z.call.return_value = mock.Mock()
-        z.subscribe(product_rate_plan_id=mock.Mock(),
+        z.subscribe(product_rate_plan_id_list=[mock.Mock(),],
                     monthly_term=mock.Mock(),
                     zAccount=None,
                     zContact=None,
