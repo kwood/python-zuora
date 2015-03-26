@@ -1851,6 +1851,7 @@ class Zuora:
         # Return
         return zPayment
 
+    # REFACTOR: Enable multiple creation
     def make_rate_plan_data(self, product_rate_plan_id):
         """
         RatePlanData is used to pass complex data to the subscribe() call.
