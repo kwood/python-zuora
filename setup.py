@@ -37,7 +37,7 @@ else:
     setupArgs.update({
         'tests_require': ['pytest'],
         'cmdclass': {'test': TestRunner},
-        'install_requires': ['suds-jurko >= 0.6', 'requests', 'httplib2 >= 0.9'],
+        'install_requires': ['suds-jurko >= 0.6', 'requests', 'httplib2'],
         'zip_safe': False,
     })
 
