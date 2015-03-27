@@ -155,10 +155,11 @@ class Zuora:
                 self.login()
             try:
                 response = fn(*args, **kwargs)
-                if self.client.last_sent:
+                try:
                     log.info("Call sent: %s" % self.client.last_sent())
-                if self.client.last_received:
                     log.info("Call received: %s" % self.client.last_received())
+                except AttributeError:
+                    pass
                 # THIS OCCASIONALLY HAPPENS
                 # AND ITS BAD WE NEED TO RESET
                 if isinstance(response, Text):
