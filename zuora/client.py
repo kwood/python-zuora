@@ -155,8 +155,10 @@ class Zuora:
                 self.login()
             try:
                 response = fn(*args, **kwargs)
-                log.info("Call sent: %s" % self.client.last_sent())
-                log.info("Call received: %s" % self.client.last_received())
+                if self.client.last_sent:
+                    log.info("Call sent: %s" % self.client.last_sent())
+                if self.client.last_received:
+                    log.info("Call received: %s" % self.client.last_received())
                 # THIS OCCASIONALLY HAPPENS
                 # AND ITS BAD WE NEED TO RESET
                 if isinstance(response, Text):
@@ -500,7 +502,7 @@ class Zuora:
         if id_only:
             fields = 'Id'
         else:
-            fields = """Id, AccountNumber, AutoPay, Balance, Currency, DefaultPaymentMethodId,
+            fields = """Id, AccountNumber, AutoPay, Balance, BillToId, SoldToId, Currency, DefaultPaymentMethodId,
                         PaymentGateway, Name, Status, UpdatedDate"""
         # If no account id was specified
         if not account_id:
@@ -529,11 +531,14 @@ class Zuora:
             raise DoesNotExist("Unable to find Account for Account # %s"\
                             % account_number)
 
-    def get_contacts(self, email=None, account_id=None):
+    def get_contacts(self, contact_id=None, email=None, account_id=None):
         """
         Checks to see if the loaded user has a contact
         """
         qs_filter = []
+
+        if contact_id:
+            qs_filter.append("Id = '%s'" % contact_id)
 
         if account_id:
             qs_filter.append("AccountId = '%s'" % account_id)
@@ -1966,6 +1971,7 @@ class Zuora:
 
         return response
 
+    # Need to add quantity
     def subscribe(
         self, product_rate_plan_id_list, monthly_term, zAccount=None,
         zContact=None, zShippingContact=None,
