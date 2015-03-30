@@ -478,6 +478,7 @@ class Zuora:
         zAccountUpdate.Id = zAccount.Id
         zAccountUpdate.Status = 'Active'
         zAccountUpdate.BillToId = zContact.Id
+        # If SoldTo Contact is not specified, set to be same as BillTo Contact
         if zShippingContact:
             zAccountUpdate.SoldToId = zShippingContact.Id
         else:
@@ -1853,6 +1854,72 @@ class Zuora:
         # Return
         return zPayment
 
+
+    def make_rate_plan_charge_data(self, product_rate_plan_charge_id, quantity):
+        """
+        Construct a RatePlanChargeData object. Pass these into a list to construct RatePlanData.
+        """
+
+        # Build RatePlanCharge
+        zRatePlanCharge = self.client.factory.create('ns1:RatePlanCharge')
+        zRatePlanCharge.ProductRatePlanChargeId = product_rate_plan_charge_id
+        zRatePlanCharge.Quantity = quantity
+
+        # Omit RatePlanChargeTier since no need to override Price and Tier
+
+        # Build RatePlanChargeData
+        zRatePlanChargeData = self.client.factory.create('ns1:RatePlanChargeData')
+        zRatePlanChargeData.RatePlanCharge = zRatePlanCharge
+
+        # Return RatePlanChargeData
+        return zRatePlanChargeData
+
+    def make_rate_plan_data_from_charge_data_list(self, product_rate_plan_id, rate_plan_charge_data_list):
+        """
+        Construct a RatePlanData object from a ProductRatePlan Id and a list of RatePlanChargeData.
+        """
+        zRatePlanData = self.make_rate_plan_data(product_rate_plan_id)
+        zRatePlanData.RatePlanChargeData = rate_plan_charge_data_list
+
+        return zRatePlanData
+
+    def make_subscribe_request(self, subscription, rate_plan_data_list, account_id, billto_id, soldto_id=None, preview=False):
+        # Construct SubscriptionData object from parameters
+        zSubscriptionData = self.client.factory.create('ns0:SubscriptionData')
+        zSubscriptionData.Subscription = subscription
+        zSubscriptionData.RatePlanData = rate_plan_data_list
+
+        # Construct SubscribeRequest object
+        zSubscribeRequest = self.client.factory.create('ns0:SubscribeRequest')
+        zSubscribeRequest.SubscriptionData = zSubscriptionData
+        zSubscribeRequest.Account = self.get_account(account_id, id_only=True)
+
+        # Set Bill To and Sold To Contacts
+        zSubscribeRequest.BillToContact = self.get_contacts(contact_id=billto_id)[0]
+        if soldto_id:
+            zSubscribeRequest.SoldToContact = self.get_contacts(contact_id=soldto_id)[0]
+        else:
+            zSubscribeRequest.SoldToContact = zSubscribeRequest.BillToContact
+
+        # Construct SubscribeOptions and attach to SubscribeRequest
+        # Generate invoice AND apply existing credit balance, but DO NOT process payments yet
+        zSubscribeOptions = self.client.factory.create("ns0:SubscribeOptions")
+        zSubscribeOptions.GenerateInvoice = True
+        zSubscribeOptions.ProcessPayments = False
+        zSubscribeOptions.ApplyCreditBalance = True
+
+        zSubscribeRequest.SubscribeOptions = zSubscribeOptions
+
+        # Generate the subscription in Preview mode if specified as such
+        if preview:
+            zPreviewOptions = self.client.factory.create("ns0:PreviewOptions")
+            zPreviewOptions.EnablePreviewMode = True
+            zPreviewOptions.NumberOfPeriods = subscription.InitialTerm
+            zSubscribeRequest.PreviewOptions = zPreviewOptions
+
+        return zSubscribeRequest
+
+
     # REFACTOR: Enable multiple creation
     def make_rate_plan_data(self, product_rate_plan_id):
         """
@@ -1877,8 +1944,8 @@ class Zuora:
 
     def make_subscription(self, monthly_term, name=None, notes=None,
                           recurring=True, term_type="TERMED",
-                          renewal_term=None, order_id=None,
-                          start_date=None):
+                          renewal_term=None,
+                          start_date=None, activation_date=None, acceptance_date=None):
         """
         This object contains the information needed to create a new
         subscription for the account. It is part of the entire subscribe
@@ -1897,6 +1964,12 @@ class Zuora:
         :returns: zSubscription
         """
 
+        zSubscription = self.client.factory.create('ns2:Subscription')
+        if name:
+            zSubscription.Name = name
+        if notes:
+            zSubscription.Notes = notes
+
         effective_date = datetime.now().strftime(SOAP_TIMESTAMP)
         if start_date is None:
             start_date = effective_date
@@ -1904,16 +1977,15 @@ class Zuora:
             if not isinstance(start_date, basestring):
                 start_date = start_date.strftime(SOAP_TIMESTAMP)
 
-        zSubscription = self.client.factory.create('ns2:Subscription')
-        if name:
-            zSubscription.Name = name
-        if notes:
-            zSubscription.Notes = notes
-
-        zSubscription.ContractAcceptanceDate = effective_date
         zSubscription.ContractEffectiveDate = effective_date
-        zSubscription.ServiceActivationDate = start_date
         zSubscription.TermStartDate = start_date
+        # Set activation_date. If None, leave unactivated (Draft)
+        if activation_date:
+            zSubscription.ServiceActivationDate = activation_date
+        if acceptance_date:
+            zSubscription.ContractAcceptanceDate = acceptance_date
+        else:
+            zSubscription.ContractAcceptanceDate = effective_date
 
         zSubscription.InitialTerm = monthly_term
         # Set RenewalTerm to value explicit value if not None (can be 0)
@@ -1922,13 +1994,9 @@ class Zuora:
         # Default to monthly term
         else:
             zSubscription.RenewalTerm = monthly_term
-        zSubscription.Status = 'Active'
+        # zSubscription.Status = 'Active'
         zSubscription.AutoRenew = recurring
         zSubscription.TermType = term_type
-
-        # Add Order
-        # if order_id:
-        #     zSubscription.OrderId__c = order_id
 
         return zSubscription
 
@@ -1975,7 +2043,7 @@ class Zuora:
         account_name=None, process_payments_flag=True,
         generate_invoice_flag=True, generate_preview=False,
         term_type="TERMED", renewal_term=None, subscription_name=None,
-        recurring=True, payment_method=None, order_id=None,
+        recurring=True, payment_method=None,
         user=None, billing_address=None, shipping_address=None,
         start_date=None, site_name=None,
         discount_product_rate_plan_id=None,
@@ -2050,7 +2118,6 @@ class Zuora:
         # Create Subscription
         zSubscription = self.make_subscription(monthly_term=monthly_term,
                                                recurring=recurring,
-                                               order_id=order_id,
                                                start_date=start_date)
 
         # Attach additional Options
