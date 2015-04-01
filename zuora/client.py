@@ -1752,10 +1752,10 @@ class Zuora:
         This method creates the contact from the loaded User.
 
         Uses the billing_address dictionary:
-            address1 : str : Address #1
-            address2 : str : Address #2
+            address_1 : str : Address #1
+            address_2 : str : Address #2
             city : str : City
-            country_name : str : Country Name (i.e., United States)
+            country : str : Country Name (i.e., United States)
             first_name : str : Person living at Address' First Name
             last_name : str : Person living at Address' Last Name
             postal_code : str : Postal Code
@@ -1782,14 +1782,15 @@ class Zuora:
                 zContact.FirstName = name_underscore_fix(billing_address["first_name"])
             if billing_address["last_name"]:
                 zContact.LastName = name_underscore_fix(billing_address["last_name"])
-            zContact.Address1 = billing_address["street_1"]
-            zContact.Address2 = billing_address.get("street_2")
+            zContact.Address1 = billing_address["address_1"]
+            zContact.Address2 = billing_address.get("address_2")
             zContact.City = billing_address["city"]
             zContact.State = billing_address.get("state")
             zContact.PostalCode = billing_address.get("postal_code")
-            zContact.Country = billing_address["country_code"]
+            if billing_address.get("country"):
+                zContact.Country = billing_address["country"]
             if billing_address.get("phone"):
-                zContact.HomePhone = billing_address["phone"]
+                zContact.WorkPhone = billing_address["phone"]
 
         if zAccount is not None and hasattr(zAccount, 'Id'):
             zContact.AccountId = zAccount.Id
