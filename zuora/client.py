@@ -1858,12 +1858,15 @@ class Zuora:
     def make_rate_plan_charge_data(self, product_rate_plan_charge_id, quantity):
         """
         Construct a RatePlanChargeData object. Pass these into a list to construct RatePlanData.
+        NOTE: NEED TO BRANCH BASED ON FLATFEE/VARIABLE/DISCOUNT
         """
 
         # Build RatePlanCharge
         zRatePlanCharge = self.client.factory.create('ns1:RatePlanCharge')
         zRatePlanCharge.ProductRatePlanChargeId = product_rate_plan_charge_id
-        zRatePlanCharge.Quantity = quantity
+        zProductRatePlanCharge = self.get_product_rate_plan_charges(product_rate_plan_charge_id=product_rate_plan_charge_id)[0]
+        if zProductRatePlanCharge.ChargeModel is not 'Flat Fee Pricing':
+            zRatePlanCharge.Quantity = quantity
 
         # Omit RatePlanChargeTier since no need to override Price and Tier
 
