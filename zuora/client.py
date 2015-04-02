@@ -1911,6 +1911,12 @@ class Zuora:
         zSubscribeOptions.GenerateInvoice = True
         zSubscribeOptions.ProcessPayments = False
         zSubscribeOptions.ApplyCreditBalance = True
+        # Attach SubscribeInvoiceProcessingOptions
+        SubscribeInvoiceProcessingOptions = self.client.factory.create("ns0:SubscribeInvoiceProcessingOptions")
+        SubscribeInvoiceProcessingOptions.InvoiceDate = datetime.now().strftime(SOAP_TIMESTAMP)
+        SubscribeInvoiceProcessingOptions.InvoiceTargetDate = datetime.now().strftime(SOAP_TIMESTAMP)
+        SubscribeInvoiceProcessingOptions.InvoiceProcessingScope = "Subscription"
+        zSubscribeOptions.SubscribeInvoiceProcessingOptions = SubscribeInvoiceProcessingOptions
 
         zSubscribeRequest.SubscribeOptions = zSubscribeOptions
 
