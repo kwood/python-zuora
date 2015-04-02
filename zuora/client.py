@@ -1863,7 +1863,7 @@ class Zuora:
         """
 
         # Build RatePlanCharge
-        zRatePlanCharge = self.client.factory.create('ns1:RatePlanCharge')
+        zRatePlanCharge = self.client.factory.create('ns0:RatePlanCharge')
         zRatePlanCharge.ProductRatePlanChargeId = product_rate_plan_charge_id
         zProductRatePlanCharge = self.get_product_rate_plan_charges(product_rate_plan_charge_id=product_rate_plan_charge_id)[0]
         if zProductRatePlanCharge.ChargeModel is not 'Flat Fee Pricing':
@@ -1872,7 +1872,7 @@ class Zuora:
         # Omit RatePlanChargeTier since no need to override Price and Tier
 
         # Build RatePlanChargeData
-        zRatePlanChargeData = self.client.factory.create('ns1:RatePlanChargeData')
+        zRatePlanChargeData = self.client.factory.create('ns0:RatePlanChargeData')
         zRatePlanChargeData.RatePlanCharge = zRatePlanCharge
 
         # Return RatePlanChargeData
