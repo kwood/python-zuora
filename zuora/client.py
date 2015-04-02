@@ -1896,7 +1896,7 @@ class Zuora:
         # Construct SubscribeRequest object
         zSubscribeRequest = self.client.factory.create('ns0:SubscribeRequest')
         zSubscribeRequest.SubscriptionData = zSubscriptionData
-        zSubscribeRequest.Account = self.get_account(account_id, id_only=True)
+        zSubscribeRequest.Account = self.get_account(account_id=account_id, id_only=True)
 
         # Set Bill To and Sold To Contacts
         zSubscribeRequest.BillToContact = self.get_contacts(contact_id=billto_id)[0]
