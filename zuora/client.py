@@ -1856,9 +1856,10 @@ class Zuora:
         return zPayment
 
 
-    def make_rate_plan_charge_data(self, product_rate_plan_charge_id, quantity):
+    def make_rate_plan_charge_data(self, product_rate_plan_charge_id, quantity, bill_cycle_type=None):
         """
         Construct a RatePlanChargeData object. Pass these into a list to construct RatePlanData.
+        bill_cycle_type: one of "DefaultFromCustomer", "SpecificDayOfMonth", "SubscriptionStartDay", "ChargeTriggerDay"
         NOTE: NEED TO BRANCH BASED ON FLATFEE/VARIABLE/DISCOUNT
         """
 
@@ -1868,6 +1869,8 @@ class Zuora:
         zProductRatePlanCharge = self.get_product_rate_plan_charges(product_rate_plan_charge_id=product_rate_plan_charge_id)[0]
         if zProductRatePlanCharge.ChargeModel is not 'Flat Fee Pricing':
             zRatePlanCharge.Quantity = quantity
+        if bill_cycle_type:
+            zRatePlanCharge.BillCycleType = bill_cycle_type
 
         # Omit RatePlanChargeTier since no need to override Price and Tier
 
