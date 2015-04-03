@@ -1866,11 +1866,11 @@ class Zuora:
         zRatePlanCharge = self.client.factory.create('ns0:RatePlanCharge')
         zRatePlanCharge.ProductRatePlanChargeId = product_rate_plan_charge_id
         zProductRatePlanCharge = self.get_product_rate_plan_charges(product_rate_plan_charge_id=product_rate_plan_charge_id)[0]
-        if zProductRatePlanCharge.ChargeModel is not 'Flat Fee Pricing':
+        if zProductRatePlanCharge.ChargeModel != 'Flat Fee Pricing':
             zRatePlanCharge.Quantity = quantity
-        if zProductRatePlanCharge.ChargeModel is 'Discount-Fixed Amount':
+        if zProductRatePlanCharge.ChargeModel == 'Discount-Fixed Amount':
             zRatePlanCharge.DiscountAmount = discount
-        elif zProductRatePlanCharge.ChargeModel is 'Discount-Percentage':
+        elif zProductRatePlanCharge.ChargeModel == 'Discount-Percentage':
             zRatePlanCharge.DiscountPercentage = discount
         if bill_cycle_type:
             zRatePlanCharge.BillCycleType = bill_cycle_type
