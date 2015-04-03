@@ -1855,8 +1855,7 @@ class Zuora:
         # Return
         return zPayment
 
-
-    def make_rate_plan_charge_data(self, product_rate_plan_charge_id, quantity, bill_cycle_type=None):
+    def make_rate_plan_charge_data(self, product_rate_plan_charge_id, quantity, discount=None, bill_cycle_type=None):
         """
         Construct a RatePlanChargeData object. Pass these into a list to construct RatePlanData.
         bill_cycle_type: one of "DefaultFromCustomer", "SpecificDayOfMonth", "SubscriptionStartDay", "ChargeTriggerDay"
@@ -1869,6 +1868,10 @@ class Zuora:
         zProductRatePlanCharge = self.get_product_rate_plan_charges(product_rate_plan_charge_id=product_rate_plan_charge_id)[0]
         if zProductRatePlanCharge.ChargeModel is not 'Flat Fee Pricing':
             zRatePlanCharge.Quantity = quantity
+        if zProductRatePlanCharge.ChargeModel is 'Discount-Fixed Amount':
+            zRatePlanCharge.DiscountAmount = discount
+        elif zProductRatePlanCharge.ChargeModel is 'Discount-Percentage':
+            zRatePlanCharge.DiscountPercentage = discount
         if bill_cycle_type:
             zRatePlanCharge.BillCycleType = bill_cycle_type
 
@@ -1931,7 +1934,6 @@ class Zuora:
             zSubscribeRequest.PreviewOptions = zPreviewOptions
 
         return zSubscribeRequest
-
 
     # REFACTOR: Enable multiple creation
     def make_rate_plan_data(self, product_rate_plan_id):
