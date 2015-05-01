@@ -446,7 +446,7 @@ class Zuora:
                                          billing_address=billing_address,
                                          zAccount=zAccount)
 
-        # Add the shipping contact if it exists
+        # Add the shipping contact if specified, otherwise same as billing contact
         if shipping_address:
             zShippingContact = self.make_contact(
                 user=user,
@@ -454,7 +454,7 @@ class Zuora:
                 zAccount=zAccount
             )
         else:
-            zShippingContact = None
+            zShippingContact = zContact
 
         # Create Payment Method on Account
         if payment_method_id:
@@ -956,11 +956,6 @@ class Zuora:
         # If we're looking for one specific product
         if product_id:
             qs_filter = "Id = '%s'" % product_id
-        # If we're pulling multiple products by their shortcodes
-        # elif shortcodes:
-        #     qs_filter_list = ["ShortCode__c = '%s'" % code
-        #                         for code in shortcodes]
-        #     qs_filter = " OR ".join(qs_filter_list)
 
         if qs_filter:
             qs += " WHERE %s" % qs_filter
@@ -1893,7 +1888,7 @@ class Zuora:
 
         return zRatePlanData
 
-    def make_subscribe_request(self, subscription, rate_plan_data_list, account_id, billto_id, soldto_id=None, preview=False):
+    def make_subscribe_request(self, subscription, rate_plan_data_list, account_id, billto_id=None, soldto_id=None, preview=False):
         # Construct SubscriptionData object from parameters
         zSubscriptionData = self.client.factory.create('ns0:SubscriptionData')
         zSubscriptionData.Subscription = subscription
@@ -1905,7 +1900,8 @@ class Zuora:
         zSubscribeRequest.Account = self.get_account(account_id=account_id, id_only=True)
 
         # Set Bill To and Sold To Contacts
-        zSubscribeRequest.BillToContact = self.get_contacts(contact_id=billto_id)[0]
+        if billto_id:
+            zSubscribeRequest.BillToContact = self.get_contacts(contact_id=billto_id)[0]
         if soldto_id:
             zSubscribeRequest.SoldToContact = self.get_contacts(contact_id=soldto_id)[0]
         else:
