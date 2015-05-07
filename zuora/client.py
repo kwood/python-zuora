@@ -1088,9 +1088,10 @@ class Zuora:
         :param list product_rate_plan_id_list: list of ProductRatePlanID's
         """
         # Get Product Rate Plan Charges
-        custom_field_string = ''
-        for custom_field in custom_fields:
-            custom_field_string += ', %s' % custom_field
+        if custom_fields:
+            custom_field_string = ''
+            for custom_field in custom_fields:
+                custom_field_string += ', %s' % custom_field
         qs = """
             SELECT
                 AccountingCode, BillCycleDay, BillCycleType, BillingPeriod,
