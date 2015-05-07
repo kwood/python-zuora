@@ -1080,7 +1080,7 @@ class Zuora:
 
     def get_product_rate_plan_charges(self, product_rate_plan_id=None,
                                       product_rate_plan_id_list=None,
-                                      product_rate_plan_charge_id=None):
+                                      product_rate_plan_charge_id=None, custom_fields=None):
         """
         Gets the Product Rate Plan Charges.
 
@@ -1088,6 +1088,9 @@ class Zuora:
         :param list product_rate_plan_id_list: list of ProductRatePlanID's
         """
         # Get Product Rate Plan Charges
+        custom_field_string = ''
+        for custom_field in custom_fields:
+            custom_field_string += ', %s' % custom_field
         qs = """
             SELECT
                 AccountingCode, BillCycleDay, BillCycleType, BillingPeriod,
@@ -1099,9 +1102,9 @@ class Zuora:
                 RevRecCode, RevRecTriggerCondition,
                 SmoothingModel, SpecificBillingPeriod,
                 TriggerEvent, UOM, UpToPeriods,
-                UseDiscountSpecificAccountingCode
+                UseDiscountSpecificAccountingCode %s
             FROM ProductRatePlanCharge
-            """
+            """ % custom_field_string
         where_id_string = "ProductRatePlanId = '%s'"
         # If only querying with one product rate plan id
         if product_rate_plan_id:
