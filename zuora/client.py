@@ -309,6 +309,59 @@ class Zuora:
         # return the response
         return response
 
+    def amend(self, amend_request):
+        """
+        Makes the amend() call.
+        https://knowledgecenter.zuora.com/BC_Developers/SOAP_API/E_SOAP_API_Calls/amend_call
+        """
+        # Call amend()
+        fn = self.client.service.amend
+        response = self.call(fn, amend_request)
+        return response
+
+    def make_amend_options(self, generate_invoice=False, invoice_processing_options=None, process_payments=False):
+        """
+        Construct AmendOptions.
+        """
+        # Construct SubscribeOptions and attach to SubscribeRequest
+        # Generate invoice AND apply existing credit balance, but DO NOT process payments yet
+        zAmendOptions = self.client.factory.create("ns0:AmendOptions")
+        zAmendOptions.GenerateInvoice = generate_invoice
+        zAmendOptions.ProcessPayments = process_payments
+        if invoice_processing_options:
+            zAmendOptions.InvoiceProcessingOptions = invoice_processing_options
+        return zAmendOptions
+
+    def make_amendment(
+        self, subscription_id, amendment_type,
+        contract_effective_date=datetime.now().strftime(SOAP_TIMESTAMP),
+        rate_plan_data=None
+    ):
+        """
+        Construct an Amendment Object.
+        """
+        zAmendment = self.client.factory.create('ns2:Amendment')
+        zAmendment.Name = 'Amendment'
+        zAmendment.ContractEffectiveDate = contract_effective_date
+        if rate_plan_data:
+            zAmendment.RatePlanData = rate_plan_data
+        zAmendment.SubscriptionId = subscription_id
+        zAmendment.Type = amendment_type
+
+        return zAmendment
+
+    def make_amend_request(self, amendments, amend_options=None, preview_options=None, external_payment_options=None):
+        zAmendRequest = self.client.factory.create('ns0:AmendRequest')
+        zAmendRequest.Amendments = amendments
+        if amend_options:
+            zAmendRequest.AmendOptions = amend_options
+        if preview_options:
+            zAmendRequest.PreviewOptions = preview_options
+        if external_payment_options:
+            zAmendRequest.ExternalPaymentOptions = external_payment_options
+
+        return zAmendRequest
+
     def create_product_amendment(self, effective_date, subscription_id,
                                   name_prepend, amendment_type,
                                   status="Draft", description=None,
