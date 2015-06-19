@@ -481,7 +481,7 @@ class Zuora:
 
     def create_active_account(self, zAccount=None, zContact=None,
                               payment_method_id=None, user=None,
-                              billing_address=None, shipping_address=None,
+                              billing_address=None, shipping_address=None, crm_id=None,
                               site_name=None, prepaid=False,
                               gateway_name=None):
         """
@@ -489,7 +489,7 @@ class Zuora:
         """
         # Create Account if it doesn't exist
         if not zAccount:
-            zAccount = self.make_account(user=user, site_name=site_name,
+            zAccount = self.make_account(user=user, crm_id=crm_id, site_name=site_name,
                                          billing_address=billing_address,
                                          gateway_name=gateway_name)
 
