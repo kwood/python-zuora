@@ -10,10 +10,10 @@ from request_base import RequestBase, rest_client_reconnect
 class SubscriptionManager(RequestBase):
 
     @rest_client_reconnect
-    def get_subscriptions_by_account(self, accountKey, pageSize=10):
+    def get_subscriptions_by_account(self, accountKey, pageSize=10, page=1):
         fullUrl = self.zuora_config.base_url + 'subscriptions/accounts/' + \
                   accountKey
-        data = {'pageSize': pageSize}
+        data = {'pageSize': pageSize, 'page': page}
 
         response = requests.get(fullUrl, params=data,
                                 headers=self.zuora_config.headers,
