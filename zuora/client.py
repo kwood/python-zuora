@@ -668,7 +668,7 @@ class Zuora:
             raise DoesNotExist("Unable to find Invoice for Id %s"\
                             % invoice_id)
 
-    def get_invoices(self, account_id=None, minimum_balance=None,
+    def get_invoices(self, account_id=None, account_number=None, minimum_balance=None,
                      status=None):
         """
         Gets the Invoices matching criteria.
@@ -681,6 +681,8 @@ class Zuora:
 
         if account_id:
             qs_filter.append("AccountId = '%s'" % account_id)
+        if account_number:
+            qs_filter.append("AccountNumber = '%s'" % account_number)
         if minimum_balance:
             qs_filter.append("Balance > '%s'" % minimum_balance)
         if status:
@@ -854,7 +856,7 @@ class Zuora:
             raise DoesNotExist("Unable to find Payment for Id %s"\
                             % payment_id)
 
-    def get_payments(self, account_id=None):
+    def get_payments(self, account_id=None, account_number=None):
         """
         Gets the Payments matching criteria.
 
@@ -866,6 +868,8 @@ class Zuora:
 
         if account_id:
             qs_filter.append("AccountId = '%s'" % account_id)
+        if account_number:
+            qs_filter.append("AccountNumber = '%s'" % account_number)
 
         if qs_filter:
             qs = """
