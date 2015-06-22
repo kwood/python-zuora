@@ -1525,7 +1525,7 @@ class Zuora:
         # Return the Match
         return zRecords
 
-    def get_subscriptions(self, subscription_id=None, account_id=None,
+    def get_subscriptions(self, subscription_id=None, account_id=None, account_number=None,
                           auto_renew=None, status=None, term_type=None,
                           term_end_date=None, term_start_date=None,
                           subscription_number=None):
@@ -1554,6 +1554,9 @@ class Zuora:
 
         if account_id:
             qs_filter.append("AccountId = '%s'" % account_id)
+
+        if account_number:
+            qs_filter.append("AccountNumber = '%s'" % account_number)
 
         if auto_renew:
             qs_filter.append("AutoRenew = %s" % auto_renew.lower())
