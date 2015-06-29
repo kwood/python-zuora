@@ -14,8 +14,7 @@ class TransactionManager(RequestBase):
             'page': page
         }
         response = requests.get(fullUrl, params=params,
-                                headers=self.zuora_config.headers,
-                                verify=False)
+                                headers=self.zuora_config.headers)
         return self.get_json(response)
 
     @rest_client_reconnect
@@ -26,8 +25,7 @@ class TransactionManager(RequestBase):
             'pageSize': pageSize
         }
         response = requests.get(fullUrl, params=params,
-                                headers=self.zuora_config.headers,
-                                verify=False)
+                                headers=self.zuora_config.headers)
         return self.get_json(response)
 
     @rest_client_reconnect
@@ -35,6 +33,5 @@ class TransactionManager(RequestBase):
         fullUrl = self.zuora_config.base_url + 'operations/invoice-collect'
         data = json.dumps(jsonParams)
         response = requests.post(fullUrl, data=data,
-                                 headers=self.zuora_config.headers,
-                                 verify=False)
+                                 headers=self.zuora_config.headers)
         return self.get_json(response)

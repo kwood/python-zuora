@@ -29,8 +29,7 @@ class RequestBase(object):
 
     def login(self):
         fullUrl = self.zuora_config.base_url + 'connections'
-        response = requests.post(fullUrl, headers=self.zuora_config.headers,
-                                 verify=False)
+        response = requests.post(fullUrl, headers=self.zuora_config.headers)
         return self.get_json(response)
 
     def get_json(self, response):

@@ -19,8 +19,7 @@ class AccountManager(RequestBase):
             return None
 
         response = requests.post(fullUrl, data=data,
-                                 headers=self.zuora_config.headers,
-                                 verify=False)
+                                 headers=self.zuora_config.headers)
         return self.get_json(response)
 
     @rest_client_reconnect
@@ -28,16 +27,14 @@ class AccountManager(RequestBase):
         fullUrl = self.zuora_config.base_url + 'accounts/' + accountKey + \
                   '/summary'
 
-        response = requests.get(fullUrl, headers=self.zuora_config.headers,
-                                verify=False)
+        response = requests.get(fullUrl, headers=self.zuora_config.headers)
         return self.get_json(response)
 
     @rest_client_reconnect
     def get_account(self, accountKey):
         fullUrl = self.zuora_config.base_url + 'accounts/' + accountKey
 
-        response = requests.get(fullUrl, headers=self.zuora_config.headers,
-                                verify=False)
+        response = requests.get(fullUrl, headers=self.zuora_config.headers)
         return self.get_json(response)
 
     @rest_client_reconnect
@@ -50,6 +47,5 @@ class AccountManager(RequestBase):
             data = None
 
         response = requests.put(fullUrl, data=data,
-                                headers=self.zuora_config.headers,
-                                verify=False)
+                                headers=self.zuora_config.headers)
         return self.get_json(response)

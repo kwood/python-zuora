@@ -14,6 +14,5 @@ class CatalogManager(RequestBase):
                   'page': page}
 
         response = requests.get(fullUrl, params=params,
-                                headers=self.zuora_config.headers,
-                                verify=False)
+                                headers=self.zuora_config.headers)
         return self.get_json(response)
