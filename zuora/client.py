@@ -332,6 +332,17 @@ class Zuora:
             zAmendOptions.InvoiceProcessingOptions = invoice_processing_options
         return zAmendOptions
 
+    def make_preview_options(self, enable_preview_mode=True, number_of_periods=None, preview_through_term_end=True):
+        """
+        Construct PreviewOptions.
+        """
+        # Construct PreviewOptions
+        preview_options = self.client.factory.create("ns0:PreviewOptions")
+        preview_options.EnablePreviewMode = enable_preview_mode
+        preview_options.NumberOfPeriods = number_of_periods
+        preview_options.PreviewThroughTermEnd = preview_through_term_end
+        return preview_options
+
     def make_amendment(
         self, subscription_id, amendment_type,
         contract_effective_date=datetime.now().strftime(SOAP_TIMESTAMP),
