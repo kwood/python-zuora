@@ -339,8 +339,10 @@ class Zuora:
         # Construct PreviewOptions
         preview_options = self.client.factory.create("ns0:PreviewOptions")
         preview_options.EnablePreviewMode = enable_preview_mode
-        preview_options.NumberOfPeriods = number_of_periods
-        preview_options.PreviewThroughTermEnd = preview_through_term_end
+        if number_of_periods:
+            preview_options.NumberOfPeriods = number_of_periods
+        else:
+            preview_options.PreviewThroughTermEnd = preview_through_term_end
         return preview_options
 
     def make_amendment(
