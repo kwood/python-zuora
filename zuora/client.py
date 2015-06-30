@@ -335,6 +335,7 @@ class Zuora:
             AmendInvoiceProcessingOptions.InvoiceDate = datetime.now().strftime(SOAP_TIMESTAMP)
             AmendInvoiceProcessingOptions.InvoiceTargetDate = (datetime.now()+timedelta(days=30)).strftime(SOAP_TIMESTAMP)
             AmendInvoiceProcessingOptions.InvoiceProcessingScope = "Subscription"
+            zAmendOptions.InvoiceProcessingOptions = AmendInvoiceProcessingOptions
         return zAmendOptions
 
     def make_preview_options(self, enable_preview_mode=True, number_of_periods=None, preview_through_term_end=True):
