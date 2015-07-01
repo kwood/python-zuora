@@ -1,8 +1,10 @@
 import requests
+import urllib3
 from rest_wrapper import (AccountManager, CatalogManager, PaymentMethodManager,
                           SubscriptionManager, TransactionManager,
                           UsageManager)
 
+urllib3.disable_warnings()
 ## This file contains some parameters that will need to be changed to work in different tenants:
 ## REQUIRED PARAMS:
 ## username: change to an API user that has REST write capabilities
