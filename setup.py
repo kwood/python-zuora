@@ -2,10 +2,10 @@
 
 setupArgs = {
     'name': 'zuora',
-    'version': '1.0.16',
-    'author': 'MapMyFitness',
-    'author_email': 'brandon.fredericks@mapmyfitness.com',
-    'url': 'http://github.com/mapmyfitness/python-zuora',
+    'version': '1.0.20',
+    'author': 'MapMyFitness (Guidebook fork)',
+    'author_email': 'naoya@guidebook.com',
+    'url': 'http://github.com/naoyak/python-zuora',
     'description': 'Zuora client library.',
     'packages': [
         'zuora',
