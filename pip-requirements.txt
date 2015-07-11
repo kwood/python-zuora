@@ -1,2 +1,2 @@
 suds-jurko==0.6
-httplib2==0.9
+httplib2==0.9.1
