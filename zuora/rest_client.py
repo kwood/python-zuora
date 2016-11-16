@@ -1,9 +1,8 @@
 import requests
-from rest_wrapper import (AccountManager, CatalogManager, PaymentMethodManager,
-                          SubscriptionManager, TransactionManager,
-                          UsageManager)
+from rest_wrapper import (AccountManager, AmendmentManager, CatalogManager,
+                          PaymentMethodManager, SubscriptionManager,
+                          TransactionManager, UsageManager)
 
-requests.packages.urllib3.disable_warnings()
 ## This file contains some parameters that will need to be changed to work in different tenants:
 ## REQUIRED PARAMS:
 ## username: change to an API user that has REST write capabilities
@@ -37,6 +36,7 @@ class RestClient(object):
     def __init__(self, zuora_settings):
         self.zuora_config = ZuoraConfig(zuora_settings)
         self.account = AccountManager(self.zuora_config)
+        self.amendment = AmendmentManager(self.zuora_config)
         self.catalog = CatalogManager(self.zuora_config)
         self.payment_method = PaymentMethodManager(self.zuora_config)
         self.subscription = SubscriptionManager(self.zuora_config)
