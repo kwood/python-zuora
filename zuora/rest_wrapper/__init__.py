@@ -1,4 +1,5 @@
 from account_manager import AccountManager
+from amendment_manager import AmendmentManager
 from catalog_manager import CatalogManager
 from payment_method_manager import PaymentMethodManager
 from subscription_manager import SubscriptionManager
