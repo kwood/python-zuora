@@ -2,7 +2,7 @@
 
 setupArgs = {
     'name': 'zuora',
-    'version': '1.0.20',
+    'version': '1.0.21',
     'author': 'MapMyFitness (Guidebook fork)',
     'author_email': 'naoya@guidebook.com',
     'url': 'http://github.com/naoyak/python-zuora',
